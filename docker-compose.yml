@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:latest
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  celery-beat:
+    build:
+      context: .
+      dockerfile: ./compose/backend/Dockerfile
+    command: uv run celery -A crawler.celery_app beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+  celery-worker:
+    build:
+      context: .
+      dockerfile: ./compose/backend/Dockerfile
+    command: uv run celery -A crawler.celery_app worker --loglevel=info --concurrency=2 -Q crawl,refresh,maintenance
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+volumes:
+  postgres-data:
+  redis_data:

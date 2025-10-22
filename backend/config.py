@@ -13,6 +13,9 @@ DATABASE_NAME = config("DATABASE_NAME")
 
 SQLALCHEMY_URI = f"postgresql+psycopg://{str(DATABASE_USER)}:{str(DATABASE_PASSWORD)}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
 
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+
 
 class CustomFormatter(logging.Formatter):
     """Logging colored formatter, adapted from https://stackoverflow.com/a/56944256/3638629"""
