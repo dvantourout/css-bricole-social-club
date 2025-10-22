@@ -10,6 +10,10 @@ class Base(DeclarativeBase):
     pass
 
 
+def get_db() -> Session:
+    return Session(engine)
+
+
 def get_session() -> Generator[Session]:
     with Session(engine) as session:
         try:
