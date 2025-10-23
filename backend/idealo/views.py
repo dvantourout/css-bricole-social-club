@@ -1,6 +1,7 @@
 from database import SessionDep
 from fastapi import APIRouter
 from idealo.client import Client
+from idealo.repository import TrendingQueryRepository
 
 router = APIRouter()
 client = Client()
@@ -8,4 +9,6 @@ client = Client()
 
 @router.get("/")
 def get_trending_queries(db_session: SessionDep):
-    return client.list_trending_queries(db_session=db_session)
+    repository = TrendingQueryRepository(db_session)
+
+    return repository.list()

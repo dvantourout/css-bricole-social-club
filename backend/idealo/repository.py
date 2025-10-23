@@ -18,3 +18,8 @@ class TrendingQueryRepository:
             self.db.commit()
 
         return query
+
+    def list(self) -> list[TrendingQuery]:
+        query = self.db.query(TrendingQuery)
+
+        return query.all()

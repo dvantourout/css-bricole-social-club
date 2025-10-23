@@ -1,6 +1,5 @@
 import requests
-from adstrong.schemas import ProductsInput
-from database import SessionDep
+from adstrong.schemas import AdstrongProducts
 
 # q: chaussures securite timberland
 # page: 1
@@ -21,7 +20,7 @@ class Client:
     def get_api_url(cls) -> str:
         return f"{cls.base_url}/api/v1/search"
 
-    def list_products(cls, *, db_session: SessionDep, query: str) -> ProductsInput:
+    def list_products(cls, *, query: str) -> AdstrongProducts:
         url = cls.get_api_url()
 
         params = {
@@ -37,6 +36,6 @@ class Client:
 
         json_data = response.json()
 
-        validated_data = ProductsInput.model_validate(json_data, strict=False)
+        validated_data = AdstrongProducts.model_validate(json_data, strict=False)
 
         return validated_data

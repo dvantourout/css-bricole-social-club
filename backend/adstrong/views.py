@@ -1,14 +1,18 @@
 from adstrong.client import Client
-from adstrong.schemas import ProductsOutputs
-from database import SessionDep
+from adstrong.normalizer import AdstrongNormalizer
 from fastapi import APIRouter
+from shared.schemas import NormalizedProduct
 
 router = APIRouter()
 client = Client()
 
 
 @router.get("/")
-def get_products(db_session: SessionDep) -> ProductsOutputs:
-    return client.list_products(
-        db_session=db_session, query="chaussures securite timberland"
-    )
+def get_products() -> list[NormalizedProduct]:
+    response = client.list_products(query="chaussures securite timberland")
+
+    normalized_products = [
+        AdstrongNormalizer.normalize(product) for product in response.products
+    ]
+
+    return normalized_products
