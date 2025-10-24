@@ -1,33 +1,11 @@
 from idealo.models import TrendingQuery
 from idealo.schemas import TrendingQuerySchema
-from sqlalchemy import asc, desc, insert
+from shared.respository import BaseRepository, OrderBy
+from sqlalchemy import insert
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session
 
 
-class TrendingQueryRepository:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def find_or_create(self, query_text: str, locale: str):
-        query = self.db.query(TrendingQuery).get(
-            {
-                "query_text": query_text,
-                "locale": locale,
-            }
-        )
-
-        if not query:
-            query = TrendingQuery(
-                query_text=query_text,
-                locale=locale,
-            )
-
-            self.db.add(query)
-            self.db.commit()
-
-        return query
-
+class TrendingQueryRepository(BaseRepository):
     def upsert(self, trending_queries: list[TrendingQuerySchema]):
         queries = {query.query: query for query in trending_queries}
 
@@ -60,15 +38,8 @@ class TrendingQueryRepository:
         )
         self.db.commit()
 
-    def list(
-        self, *, order_by: str = None, order_by_desc: bool = False
-    ) -> list[TrendingQuery]:
-        query = self.db.query(TrendingQuery)
+    def list(self, *, order_bys: list[OrderBy] = None) -> list[TrendingQuery]:
+        stmt = select(TrendingQuery)
+        stmt = self._order_by(stmt, order_bys)
 
-        if order_by:
-            order_by_direction = desc if order_by_desc else asc
-            query = query.order_by(
-                order_by_direction(order_by),
-            )
-
-        return query.all()
+        return self.db.scalars(stmt).all()

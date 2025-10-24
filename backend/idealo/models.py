@@ -7,5 +7,5 @@ class TrendingQuery(Base, TimestampMixin):
     __tablename__ = "trending_queries"
 
     query_text: Mapped[str] = mapped_column(primary_key=True)
-    popularity: Mapped[str]
+    popularity: Mapped[int]
     locale: Mapped[str]

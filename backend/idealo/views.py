@@ -1,7 +1,7 @@
 from database import SessionDep
 from fastapi import APIRouter
 from idealo.client import Client
-from idealo.repository import TrendingQueryRepository
+from idealo.repository import OrderBy, TrendingQueryRepository
 
 router = APIRouter()
 client = Client()
@@ -11,7 +11,12 @@ client = Client()
 def get_trending_queries(db_session: SessionDep):
     repository = TrendingQueryRepository(db_session)
 
-    return repository.list(order_by="updated_at", order_by_desc=True)
+    return repository.list(
+        order_bys=[
+            OrderBy(name="updated_at", desc=True),
+            OrderBy(name="popularity", desc=True),
+        ]
+    )
 
 
 @router.get("/sync")

@@ -15,13 +15,8 @@ def refresh_trending_queries():
     with get_db() as db:
         idealo_client = IdealoClient()
         trending_queries = idealo_client.get_trending_queries()
-
         trending_queries_repository = TrendingQueryRepository(db)
 
-        for trending_query_data in trending_queries.queries:
-            trending_query = trending_queries_repository.find_or_create(
-                query_text=trending_query_data.query,
-                source="idealo",
-            )
+        trending_queries_repository.upsert(trending_queries)
 
     logger.info("Trending queries refreshed")
