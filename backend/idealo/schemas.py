@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 
 
-class TrendingQuery(BaseModel):
+class TrendingQuerySchema(BaseModel):
     query: str
     popularity: int
     percent_increase: int = Field(alias="percentIncrease")
 
 
-class TrendingQueries(BaseModel):
+class TrendingQueriesSchema(BaseModel):
     locale: str
-    queries: list[TrendingQuery]
+    queries: list[TrendingQuerySchema]
