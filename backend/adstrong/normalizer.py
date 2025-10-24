@@ -1,17 +1,33 @@
 from adstrong.schemas import ProductInput
-from shared.schemas import NormalizedProduct
-from shared.utils import clean_url
+from shared.schemas import NormalizedPrice, NormalizedProduct
+from shared.utils import clean_link
 
 
 class AdstrongNormalizer:
     @staticmethod
     def normalize(product: ProductInput) -> NormalizedProduct:
-        clean_product_url = clean_url(product.url)
+        clean_product_url = clean_link(product.url)
+
+        price = NormalizedPrice(
+            value=product.price.value,
+            currency=product.price.currency,
+        )
+        sale_price = None
+
+        if product.marketing_price and product.marketing_price.original_price:
+            sale_price = price
+            price = NormalizedPrice(
+                value=product.marketing_price.original_price.value,
+                currency=product.marketing_price.original_price.currency,
+            )
 
         return NormalizedProduct(
             title=product.title,
-            mpn=product.mpn,
+            image_link=product.image,
+            link=clean_product_url,
+            price=price,
+            merchant_name=product.seller,
+            sale_price=sale_price,
             gtin=None,
-            image_url=product.image,
-            product_url=clean_product_url,
+            mpn=product.mpn,
         )

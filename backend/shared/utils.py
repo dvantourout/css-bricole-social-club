@@ -143,7 +143,7 @@ TRACKING_PARAMS_REGISTRY = {
 }
 
 
-def clean_url(url: str) -> str:
+def clean_link(url: str) -> str:
     logger.debug(f"cleaning url: {url}")
 
     parsed_url = urlparse(url)

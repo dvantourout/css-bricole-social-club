@@ -17,23 +17,28 @@ class MarketingPrice(BaseModel):
 
 
 class ProductInput(BaseModel):
-    id: str
-    marketplace: Optional[str]
-    mpn: str = None
-    seller_id: str = Field(alias="sellerId", default=None)
-    seller: str
-    seller_display: str = Field(alias="sellerDisplay")
     title: str
-    brand: str = None
-    price: Price
-    is_sale: bool = Field(alias="isSale")
-    is_prime: bool = Field(alias="isPrime")
-    marketing_price: Optional[MarketingPrice] = Field(
-        alias="marketingPrice", default=None
-    )
     image: str
     url: str
-    free_shipping: bool = Field(alias="freeShipping")
+    seller: str
+
+    marketing_price: Optional[MarketingPrice] = Field(
+        alias="marketingPrice",
+        default=None,
+    )
+    price: Price
+    mpn: str = None
+
+    # id: str
+    # marketplace: Optional[str]
+    # mpn: str = None
+    # seller_id: str = Field(alias="sellerId", default=None)
+    # seller: str
+    # seller_display: str = Field(alias="sellerDisplay")
+    # brand: str = None
+    # is_sale: bool = Field(alias="isSale")
+    # is_prime: bool = Field(alias="isPrime")
+    # free_shipping: bool = Field(alias="freeShipping")
 
 
 class AdstrongProducts(BaseModel):

@@ -9,7 +9,7 @@ client = Client()
 
 @router.get("/")
 def get_products() -> list[NormalizedProduct]:
-    response = client.list_products(query="chaussures securite timberland")
+    response = client.list_products(query="batterie")
 
     normalized_products = [
         AdstrongNormalizer.normalize(product) for product in response.products

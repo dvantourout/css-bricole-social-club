@@ -31,7 +31,11 @@ class Client:
         }
         headers = {"X-Country": "fr"}
 
-        response = requests.get(url=url, params=params, headers=headers)
+        response = requests.get(
+            url=url,
+            params=params,
+            headers=headers,
+        )
         response.raise_for_status()
 
         json_data = response.json()
