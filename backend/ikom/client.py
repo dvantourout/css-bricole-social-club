@@ -3,7 +3,7 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
-from ikom.schemas import ProductInput
+from ikom.schemas import ProductInputSchema
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ class Client:
     def __init__(self):
         self.base_url = "https://www.ikom-shopping.com/fr-fr/ajax/results"
 
-    def list_products(self, *, query: str) -> list[ProductInput]:
+    def list_products(self, *, query: str) -> list[ProductInputSchema]:
         url = self.base_url
 
         params = {
@@ -45,14 +45,14 @@ class Client:
 
         elements_with_data_json = soup.find_all(attrs={"data-json": True})
 
-        products: list[ProductInput] = []
+        products: list[ProductInputSchema] = []
 
         for element in elements_with_data_json:
             data_json = element.get("data-json")
             # products_json = (json.loads(data_json))
 
             try:
-                products.append(ProductInput.model_validate_json(data_json))
+                products.append(ProductInputSchema.model_validate_json(data_json))
             except ValidationError as e:
                 logger.error(json.loads(data_json))
 

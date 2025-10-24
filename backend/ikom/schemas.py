@@ -1,21 +1,21 @@
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 
 
-class Price(BaseModel):
+class PriceSchema(BaseModel):
     value: str
     currency: str
 
 
-class ProductInput(BaseModel):
+class ProductInputSchema(BaseModel):
     # required field
     title: str
     image_link: str = Field(alias="imageLink")
     link: str
-    price: Price
+    price: PriceSchema
     merchant_name: str = Field(alias="merchantName")
 
     # display sales
-    sale_price: Price | None = Field(alias="salePrice", default=None)
+    sale_price: PriceSchema | None = Field(alias="salePrice", default=None)
 
     # required for comparison
     gtin: str | None = None

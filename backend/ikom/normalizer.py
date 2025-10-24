@@ -1,11 +1,11 @@
-from ikom.schemas import ProductInput
+from ikom.schemas import ProductInputSchema
 from shared.schemas import NormalizedPrice, NormalizedProduct
 from shared.utils import clean_link
 
 
 class IkomNormalizer:
     @staticmethod
-    def normalize(product: ProductInput) -> NormalizedProduct:
+    def normalize(product: ProductInputSchema) -> NormalizedProduct:
         clean_product_link = clean_link(product.link)
 
         return NormalizedProduct(

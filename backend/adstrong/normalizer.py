@@ -1,11 +1,11 @@
-from adstrong.schemas import ProductInput
+from adstrong.schemas import ProductInputSchema
 from shared.schemas import NormalizedPrice, NormalizedProduct
 from shared.utils import clean_link
 
 
 class AdstrongNormalizer:
     @staticmethod
-    def normalize(product: ProductInput) -> NormalizedProduct:
+    def normalize(product: ProductInputSchema) -> NormalizedProduct:
         clean_product_url = clean_link(product.url)
 
         price = NormalizedPrice(
