@@ -13,6 +13,7 @@ class ProductInputSchema(BaseModel):
     link: str
     price: PriceSchema
     merchant_name: str = Field(alias="merchantName")
+    brand: str
 
     # display sales
     sale_price: PriceSchema | None = Field(alias="salePrice", default=None)

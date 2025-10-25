@@ -28,6 +28,7 @@ class AdstrongNormalizer:
             cleaned_link=clean_product_link,
             price=price,
             merchant_name=product.seller,
+            brand=product.brand,
             sale_price=sale_price,
             gtin=product.gtin,
             mpn=product.mpn,

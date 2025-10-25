@@ -18,6 +18,7 @@ class IkomNormalizer:
                 currency=product.price.currency,
             ),
             merchant_name=product.merchant_name,
+            brand=product.brand,
             sale_price=NormalizedPrice(
                 value=product.price.value,
                 currency=product.price.currency,

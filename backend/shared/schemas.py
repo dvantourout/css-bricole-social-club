@@ -14,6 +14,7 @@ class NormalizedProduct(BaseModel):
     cleaned_link: str | None = None
     price: NormalizedPrice
     merchant_name: str
+    brand: str
 
     # useful for displaying sales
     sale_price: NormalizedPrice | None = None
