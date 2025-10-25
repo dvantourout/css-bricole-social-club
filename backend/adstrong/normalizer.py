@@ -22,6 +22,7 @@ class AdstrongNormalizer:
             )
 
         return NormalizedProduct(
+            external_id=product.id,
             title=product.title,
             image_link=product.image,
             link=product.url,

@@ -7,6 +7,8 @@ class NormalizedPrice(BaseModel):
 
 
 class NormalizedProduct(BaseModel):
+    external_id: str
+
     # required field
     title: str
     image_link: str

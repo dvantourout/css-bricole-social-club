@@ -17,6 +17,9 @@ class MarketingPriceSchema(BaseModel):
 
 
 class ProductInputSchema(BaseModel):
+    # External id
+    id: str
+
     title: str
     image: str
     url: str
