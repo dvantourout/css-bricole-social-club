@@ -27,6 +27,7 @@ class ProductInputSchema(BaseModel):
         default=None,
     )
     price: PriceSchema
+    gtin: str = None
     mpn: str = None
 
 

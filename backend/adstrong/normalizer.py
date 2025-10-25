@@ -28,6 +28,6 @@ class AdstrongNormalizer:
             price=price,
             merchant_name=product.seller,
             sale_price=sale_price,
-            gtin=None,
+            gtin=product.gtin,
             mpn=product.mpn,
         )
