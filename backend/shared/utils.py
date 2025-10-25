@@ -142,26 +142,49 @@ TRACKING_PARAMS_REGISTRY = {
     "klar_adid",
 }
 
+TRACKING_PARAMS_CUSTOM = {"campaign", "expa", "utm_campaign"}
 
-def clean_link(url: str) -> str:
+TRACKING_PARAMS = TRACKING_PARAMS_REGISTRY | TRACKING_PARAMS_CUSTOM
+
+
+def clean_affiliate(url: str) -> str | None:
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+
+    if "murl" in query_params:
+        return query_params.get("murl")[0]
+
+    if "url" in query_params:
+        return query_params.get("url")[0]
+
+    # TODO: make a list of all affiation sites
+    # TODO: still save it to the db but mark it to be cleaned later
+    if parsed_url.netloc in {
+        "cmodul.solutenetwork.com",
+        "www.awin1.com",
+    }:
+        logger.error(f"Uncleaned url: {parsed_url.netloc}")
+        return None
+
+    return url
+
+
+def clean_link(url: str) -> str | None:
     logger.debug(f"cleaning url: {url}")
+
+    url = clean_affiliate(url)
+
+    if url is None:
+        return None
 
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
 
     removed_params = {}
-
-    if "murl" in query_params:
-        return query_params.get("murl")[0]
-
-    if "cmodul.solutenetwork.com" in parsed_url.netloc:
-        logger.error("Uncleaned url")
-        return url
-
     cleaned_params = dict()
 
     for key, values in query_params.items():
-        if key.lower() not in {p.lower() for p in TRACKING_PARAMS_REGISTRY}:
+        if key.lower() not in {p.lower() for p in TRACKING_PARAMS}:
             cleaned_params[key] = values
         else:
             removed_params[key] = values
