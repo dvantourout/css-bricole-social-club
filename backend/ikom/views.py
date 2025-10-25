@@ -1,15 +1,28 @@
+import logging
+
 from fastapi import APIRouter
 from ikom.client import Client
 from ikom.normalizer import IkomNormalizer
+from pydantic import ValidationError
 
 router = APIRouter()
 client = Client()
 
+logger = logging.getLogger(__name__)
+
 
 @router.get("/")
 def get_products(query: str):
-    products = client.list_products(query=query)
+    response = client.list_products(query=query)
 
-    normalized_products = [IkomNormalizer.normalize(product) for product in products]
+    normalized_products = []
+
+    for product in response:
+        try:
+            normalized_products.append(
+                IkomNormalizer.normalize(product),
+            )
+        except ValidationError as e:
+            logger.error(e.errors())
 
     return normalized_products
