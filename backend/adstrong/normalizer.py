@@ -6,7 +6,7 @@ from shared.utils import clean_link
 class AdstrongNormalizer:
     @staticmethod
     def normalize(product: ProductInputSchema) -> NormalizedProduct:
-        clean_product_url = clean_link(product.url)
+        clean_product_link = clean_link(product.url)
 
         price = NormalizedPrice(
             value=product.price.value,
@@ -24,7 +24,8 @@ class AdstrongNormalizer:
         return NormalizedProduct(
             title=product.title,
             image_link=product.image,
-            link=clean_product_url,
+            link=product.url,
+            cleaned_link=clean_product_link,
             price=price,
             merchant_name=product.seller,
             sale_price=sale_price,

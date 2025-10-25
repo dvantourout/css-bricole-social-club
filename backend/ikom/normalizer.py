@@ -11,7 +11,8 @@ class IkomNormalizer:
         return NormalizedProduct(
             title=product.title,
             image_link=product.image_link,
-            link=clean_product_link,
+            link=product.link,
+            cleaned_link=clean_product_link,
             price=NormalizedPrice(
                 value=product.price.value,
                 currency=product.price.currency,
