@@ -5,7 +5,6 @@ from adstrong.normalizer import AdstrongNormalizer
 from database import SessionDep
 from fastapi import APIRouter
 from pydantic import ValidationError
-from shared.repository import ProductRepository
 from shared.schemas import NormalizedProduct
 
 router = APIRouter()
@@ -15,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-def get_products(db_session: SessionDep) -> list[NormalizedProduct]:
-    response = client.list_products(query="sechoir linge chauffant")
+def get_products(db_session: SessionDep, query: str) -> list[NormalizedProduct]:
+    response = client.list_products(query=query)
 
     normalized_products = []
 
@@ -27,10 +26,5 @@ def get_products(db_session: SessionDep) -> list[NormalizedProduct]:
             )
         except ValidationError as e:
             logger.error(e.errors())
-
-    ProductRepository(db=db_session).upsert(
-        source="adstrong",
-        products=normalized_products,
-    )
 
     return normalized_products

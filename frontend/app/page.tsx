@@ -3,7 +3,7 @@ export interface Product {
   title: string;
   image_link: string;
   link: string;
-  cleaned_link: null | string;
+  cleaned_link: string;
   price: Price;
   merchant_name: string;
   brand: string;
@@ -23,7 +23,7 @@ export enum Currency {
 
 export default async function Home() {
   const products = (await (
-    await fetch("http://localhost:8000/adstrong/")
+    await fetch("http://localhost:8000/api/v1")
   ).json()) as Product[];
 
   const formatPrice = (price: Price) => {
@@ -40,10 +40,6 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {products.map((product) => {
-            if (!product.cleaned_link) {
-              return;
-            }
-
             const hasDiscount =
               product.sale_price &&
               product.sale_price.value < product.price.value;
