@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class PriceSchema(BaseModel):
-    value: str
+    value: float
     currency: str
 
 

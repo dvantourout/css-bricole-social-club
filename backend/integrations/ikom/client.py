@@ -3,7 +3,7 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
-from ikom.schemas import ProductInputSchema
+from integrations.ikom.schemas import ProductInputSchema
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)

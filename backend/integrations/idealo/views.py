@@ -1,7 +1,7 @@
 from database import SessionDep
 from fastapi import APIRouter
-from idealo.client import Client
-from idealo.repository import OrderBy, TrendingQueryRepository
+from integrations.idealo.client import Client
+from integrations.idealo.repository import OrderBy, TrendingQueryRepository
 
 router = APIRouter()
 client = Client()

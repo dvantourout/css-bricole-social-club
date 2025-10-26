@@ -1,5 +1,5 @@
 import requests
-from idealo.schemas import TrendingQueriesSchema
+from integrations.idealo.schemas import TrendingQueriesSchema
 
 
 class Client:

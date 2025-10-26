@@ -1,5 +1,5 @@
 import requests
-from adstrong.schemas import AdstrongProductsSchema
+from integrations.adstrong.schemas import AdstrongProductsSchema
 
 # q: chaussures securite timberland
 # page: 1

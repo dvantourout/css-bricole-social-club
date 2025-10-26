@@ -1,5 +1,5 @@
-from idealo.models import TrendingQuery
-from idealo.schemas import TrendingQuerySchema
+from integrations.idealo.models import TrendingQuery
+from integrations.idealo.schemas import TrendingQuerySchema
 from shared.repository import BaseRepository, OrderBy
 from sqlalchemy import insert
 from sqlalchemy.future import select

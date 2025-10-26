@@ -1,4 +1,4 @@
-from adstrong.schemas import ProductInputSchema
+from integrations.adstrong.schemas import ProductInputSchema
 from shared.schemas import NormalizedPrice, NormalizedProduct
 from shared.utils import clean_link
 

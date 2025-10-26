@@ -1,4 +1,4 @@
-from ikom.schemas import ProductInputSchema
+from integrations.ikom.schemas import ProductInputSchema
 from shared.schemas import NormalizedPrice, NormalizedProduct
 from shared.utils import clean_link
 
@@ -9,6 +9,7 @@ class IkomNormalizer:
         clean_product_link = clean_link(product.link)
 
         return NormalizedProduct(
+            external_id=product.gtin,
             title=product.title,
             image_link=product.image_link,
             link=product.link,

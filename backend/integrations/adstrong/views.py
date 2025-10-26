@@ -1,9 +1,9 @@
 import logging
 
-from adstrong.client import Client
-from adstrong.normalizer import AdstrongNormalizer
 from database import SessionDep
 from fastapi import APIRouter
+from integrations.adstrong.client import Client
+from integrations.adstrong.normalizer import AdstrongNormalizer
 from pydantic import ValidationError
 from shared.schemas import NormalizedProduct
 
