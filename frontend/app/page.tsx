@@ -1,36 +1,40 @@
 export interface Product {
-  external_id: string;
-  title: string;
-  image_link: string;
   link: string;
-  cleaned_link: string;
-  price: Price;
+  title: string;
+  price: number;
+  sale_price: number | null;
   merchant_name: string;
-  brand: string;
-  sale_price: Price | null;
   gtin: null | string;
-  mpn: null | string;
-}
-
-export interface Price {
-  value: number;
+  source: Source;
+  created_at: Date;
+  cleaned_link: string;
+  image_link: string;
+  id: string;
   currency: Currency;
+  brand: string;
+  mpn: null | string;
+  external_id: string;
+  updated_at: Date;
 }
 
 export enum Currency {
   Eur = "EUR",
 }
 
+export enum Source {
+  Adstrong = "adstrong",
+}
+
 export default async function Home() {
   const products = (await (
-    await fetch("http://localhost:8000/api/v1")
+    await fetch("http://localhost:8000/api/v1/")
   ).json()) as Product[];
 
-  const formatPrice = (price: Price) => {
+  const formatPrice = (price: number) => {
     return new Intl.NumberFormat("fr-FR", {
       style: "currency",
-      currency: price.currency,
-    }).format(price.value);
+      currency: "EUR",
+    }).format(price);
   };
 
   return (
@@ -41,8 +45,7 @@ export default async function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {products.map((product) => {
             const hasDiscount =
-              product.sale_price &&
-              product.sale_price.value < product.price.value;
+              product.sale_price && product.sale_price < product.price;
 
             return (
               <a
