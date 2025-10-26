@@ -4,7 +4,7 @@ from alembic import context
 from config import SQLALCHEMY_URI
 from core.models import Product
 from database import Base
-from idealo.models import TrendingQuery
+from integrations.idealo.models import TrendingQuery
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
