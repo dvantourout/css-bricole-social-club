@@ -1,3 +1,6 @@
+import { SearchBar } from "./components/search-bar";
+import { ProductGrid } from "./components/product-grid";
+
 export interface Product {
   link: string;
   title: string;
@@ -25,89 +28,97 @@ export enum Source {
   Adstrong = "adstrong",
 }
 
-export default async function Home() {
-  const products = (await (
-    await fetch("http://localhost:8000/api/v1/")
-  ).json()) as Product[];
+// Server-side function - runs on Next.js server, not in browser
+async function fetchProducts(searchQuery: string = ""): Promise<Product[]> {
+  const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-    }).format(price);
-  };
+  try {
+    const url = `${BACKEND_URL}/api/v1/?query=${encodeURIComponent(
+      searchQuery
+    )}&page_size=50`;
+
+    console.log(`[Server] Fetching from: ${url}`); // Server log only
+
+    const response = await fetch(url, {
+      // Don't cache search results, cache empty query
+      cache: searchQuery ? "no-store" : "default",
+      next: { revalidate: searchQuery ? 0 : 3600 }, // Cache 1 hour for homepage
+    });
+
+    if (!response.ok) {
+      console.error(`[Server] Backend error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    console.log(`[Server] Fetched ${data.length} products`); // Server log only
+
+    return data;
+  } catch (error) {
+    console.error("[Server] Error fetching products:", error);
+    return [];
+  }
+}
+
+// Page component - receives searchParams from URL
+interface PageProps {
+  searchParams: Promise<{ query?: string }>;
+}
+
+export default async function Home({ searchParams }: PageProps) {
+  // Await searchParams (Next.js 15 requirement)
+  const params = await searchParams;
+  const searchQuery = params.query || "";
+
+  // Fetch products on server - HTML generated server-side!
+  const products = await fetchProducts(searchQuery);
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Products</h1>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Products</h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {products.map((product) => {
-            const hasDiscount =
-              product.sale_price && product.sale_price < product.price;
+          {/* Client Component for search input */}
+          <SearchBar initialQuery={searchQuery} />
 
-            return (
-              <a
-                key={product.external_id}
-                href={product.cleaned_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
-              >
-                <div className="relative aspect-square bg-gray-100">
-                  <img
-                    src={product.image_link}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {hasDiscount && (
-                    <div className="absolute top-1 right-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
-                      Sale
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-3">
-                  {product.brand && (
-                    <p className="text-xs text-gray-500 mb-1 truncate">
-                      {product.brand}
-                    </p>
-                  )}
-
-                  <h2 className="text-sm font-medium text-gray-900 mb-1.5 line-clamp-2 min-h-[2.5rem]">
-                    {product.title}
-                  </h2>
-
-                  <div className="flex items-baseline gap-1.5 mb-1">
-                    {hasDiscount ? (
-                      <>
-                        <span className="text-base font-bold text-red-600">
-                          {formatPrice(product.sale_price!)}
-                        </span>
-                        <span className="text-xs text-gray-500 line-through">
-                          {formatPrice(product.price)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-base font-bold text-gray-900">
-                        {formatPrice(product.price)}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-gray-600 truncate">
-                    {product.merchant_name}
-                  </p>
-                </div>
-              </a>
-            );
-          })}
+          {/* Search Results Info */}
+          {searchQuery && (
+            <div className="mt-4 text-sm text-gray-600">
+              Found {products.length} result{products.length !== 1 ? "s" : ""}{" "}
+              for "{searchQuery}"
+            </div>
+          )}
         </div>
 
+        {/* Server-rendered product grid */}
+        <ProductGrid products={products} />
+
+        {/* Empty State */}
         {products.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No products found</p>
+            {searchQuery ? (
+              <>
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <p className="mt-4 text-gray-500 text-lg">
+                  No products found for "{searchQuery}"
+                </p>
+              </>
+            ) : (
+              <p className="text-gray-500 text-lg">No products available</p>
+            )}
           </div>
         )}
       </div>
