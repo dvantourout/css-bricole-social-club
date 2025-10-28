@@ -9,5 +9,5 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-def get_products(db_session: SessionDep):
-    return ProductRepository(db=db_session).list()
+def get_products(db_session: SessionDep, query: str = None):
+    return ProductRepository(db=db_session).list(query=query)

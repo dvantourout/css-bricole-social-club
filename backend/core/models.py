@@ -2,7 +2,8 @@ from uuid import UUID
 
 from database import Base
 from shared.models import TimestampMixin
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Index, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -12,6 +13,26 @@ class Product(TimestampMixin, Base):
         UniqueConstraint(
             "source",
             "external_id",
+        ),
+        # GIN index for full-text search
+        Index(
+            "idx_product_search_vector",
+            "search_vector",
+            postgresql_using="gin",
+        ),
+        # B-tree indexes for exact matches
+        Index("idx_product_gtin", "gtin"),
+        Index("idx_product_mpn", "mpn"),
+        # Functional indexes for case-insensitive prefix matching
+        Index(
+            "idx_product_brand_lower",
+            func.lower("brand"),
+            postgresql_ops={"lower": "text_pattern_ops"},
+        ),
+        Index(
+            "idx_product_merchant_lower",
+            func.lower("merchant_name"),
+            postgresql_ops={"lower": "text_pattern_ops"},
         ),
     )
 
@@ -31,3 +52,5 @@ class Product(TimestampMixin, Base):
 
     source: Mapped[str]
     external_id: Mapped[str]
+
+    search_vector: Mapped[str | None] = mapped_column(TSVECTOR, nullable=True)
