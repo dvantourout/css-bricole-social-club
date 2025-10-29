@@ -124,18 +124,52 @@ class ProductRepository(BaseRepository):
 
         return stmt
 
-    def list(self, *, query: str = None, filter_cleaned_link: bool = True):
-        stmt = select(Product)
-
+    def _filters(
+        self,
+        *,
+        stmt: Select,
+        query: str = None,
+        filter_cleaned_link: bool = True,
+    ) -> Select:
         if query:
             stmt = self._search(stmt=stmt, query=query)
 
         if filter_cleaned_link:
             stmt = stmt.where(Product.cleaned_link.isnot(None))
 
+        return stmt
+
+    def _paginate(
+        self,
+        *,
+        stmt: Select,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Select:
+        stmt = stmt.limit(limit).offset(offset)
+
+        return stmt
+
+    def _build_base_query(self, **kwargs):
+        stmt = select(Product)
+        stmt = self._filters(stmt=stmt, **kwargs)
+
+        return stmt
+
+    def count(self, **kwargs):
+        base_stmt = self._build_base_query(**kwargs)
+        count_stmt = select(func.count()).select_from(base_stmt.subquery())
+
+        return self.db.scalar(count_stmt)
+
+    def list(self, *, limit: int = 100, offset: int = 0, **kwargs):
+        base_stmt = self._build_base_query(**kwargs)
+        stmt = self._paginate(stmt=base_stmt, limit=limit, offset=offset)
+
         return self.db.scalars(stmt).all()
 
-        if filter_cleaned_link:
-            stmt = stmt.where(Product.cleaned_link.isnot(None))
+    def list_with_count(self, *, limit: int = 100, offset: int = 0, **kwargs):
+        products = self.list(limit=limit, offset=offset, **kwargs)
+        count = self.count(**kwargs)
 
-        return self.db.scalars(stmt).all()
+        return products, count

@@ -31,7 +31,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/backend/Dockerfile
-    command: uv run celery -A crawler.celery_app worker --loglevel=info --concurrency=2 -Q crawl,refresh,maintenance
+    command: uv run celery -A crawler.celery_app worker --loglevel=info --concurrency=2 -Q crawl,refresh,sync
     volumes:
       - ./backend:/app
     env_file:

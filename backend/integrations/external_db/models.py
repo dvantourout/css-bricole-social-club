@@ -1,7 +1,10 @@
+from datetime import datetime
 from uuid import UUID
 
+from database import Base
 from integrations.external_db.database import ExternalBase
-from sqlalchemy import ForeignKey, Integer, PrimaryKeyConstraint, String, Uuid
+from shared.models import TimestampMixin
+from sqlalchemy import DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, Uuid
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -30,3 +33,13 @@ class Listing(ExternalBase):
 
     catalogue_id: Mapped[int] = mapped_column(Integer, ForeignKey("catalogues.id"))
     catalogue: Mapped["Catalogue"] = relationship()
+
+
+class ExternalDbSyncMetadata(Base, TimestampMixin):
+    __tablename__ = "external_db_sync_metadata"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    last_synced_listing_id: Mapped[int]
+    last_sync_timestamp: Mapped[datetime] = mapped_column(DateTime)
+    total_synced: Mapped[int]
+    last_error: Mapped[str | None] = mapped_column(nullable=True)

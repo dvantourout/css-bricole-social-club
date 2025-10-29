@@ -6,12 +6,16 @@ celery_app = Celery(
     "crawler",
     broker=CELERY_BROKER_URL,
     backend=CELERY_RESULT_BACKEND,
-    include=["crawler.tasks"],
+    include=[
+        "crawler.tasks",
+        "integrations.external_db.tasks",
+    ],
 )
 
 celery_app.conf.update(
     task_routes={
         "crawler.tasks.refresh_*": {"queue": "refresh"},
+        "crawler.tasks.sync_*": {"queue": "sync"},
     },
 )
 

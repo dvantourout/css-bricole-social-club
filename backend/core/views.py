@@ -9,5 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-def get_products(db_session: SessionDep, query: str = None):
-    return ProductRepository(db=db_session).list(query=query)
+def get_products(
+    db_session: SessionDep,
+    query: str = None,
+    limit: int = 100,
+    offset: int = 0,
+):
+    products, count = ProductRepository(db=db_session).list_with_count(
+        query=query, limit=limit, offset=offset
+    )
+
+    return {
+        "products": products,
+        "limit": limit,
+        "offset": offset,
+        "count": count,
+    }
