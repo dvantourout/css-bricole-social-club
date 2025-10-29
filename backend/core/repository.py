@@ -32,11 +32,9 @@ class ProductRepository(BaseRepository):
                     "image_link": product.image_link,
                     "link": product.link,
                     "cleaned_link": product.cleaned_link,
-                    "price": product.price.value,
-                    "sale_price": product.sale_price.value
-                    if product.sale_price
-                    else None,
-                    "currency": product.price.currency,
+                    "price": product.price,
+                    "sale_price": product.sale_price if product.sale_price else None,
+                    "currency": product.currency,
                     "merchant_name": product.merchant_name,
                     "brand": product.brand,
                     "gtin": product.gtin,

@@ -27,10 +27,11 @@ class AdstrongNormalizer:
             image_link=product.image,
             link=product.url,
             cleaned_link=clean_product_link,
-            price=price,
+            price=price.value,
+            currency=price.currency,
             merchant_name=product.seller,
             brand=product.brand,
-            sale_price=sale_price,
+            sale_price=sale_price.value if sale_price else None,
             gtin=product.gtin,
             mpn=product.mpn,
         )

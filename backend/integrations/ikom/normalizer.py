@@ -14,16 +14,11 @@ class IkomNormalizer:
             image_link=product.image_link,
             link=product.link,
             cleaned_link=clean_product_link,
-            price=NormalizedPrice(
-                value=product.price.value,
-                currency=product.price.currency,
-            ),
+            price=product.price.value,
+            currency=product.price.currency,
             merchant_name=product.merchant_name,
             brand=product.brand,
-            sale_price=NormalizedPrice(
-                value=product.price.value,
-                currency=product.price.currency,
-            ),
+            sale_price=product.sale_price.value if product.sale_price else None,
             gtin=product.gtin,
             mpn=product.mpn,
         )

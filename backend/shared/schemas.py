@@ -14,12 +14,13 @@ class NormalizedProduct(BaseModel):
     image_link: str
     link: str
     cleaned_link: str | None = None
-    price: NormalizedPrice
+    price: float
+    currency: str
     merchant_name: str
     brand: str
 
     # useful for displaying sales
-    sale_price: NormalizedPrice | None = None
+    sale_price: float | None = None
 
     # required for comparison
     gtin: str | None = None
