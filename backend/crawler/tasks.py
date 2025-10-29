@@ -2,8 +2,8 @@ import logging
 
 from crawler.celery_app import celery_app
 from database import get_db
-from idealo.client import Client as IdealoClient
-from idealo.repository import TrendingQueryRepository
+from integrations.idealo.client import Client as IdealoClient
+from integrations.idealo.repository import TrendingQueryRepository
 
 logger = logging.getLogger(__name__)
 
