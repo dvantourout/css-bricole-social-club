@@ -11,7 +11,7 @@ class NormalizedProduct(BaseModel):
 
     # required field
     title: str
-    image_link: str
+    image_link: str | None = None
     link: str
     cleaned_link: str | None = None
     price: float

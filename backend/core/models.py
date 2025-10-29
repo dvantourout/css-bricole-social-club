@@ -39,7 +39,7 @@ class Product(TimestampMixin, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, index=True)
 
     title: Mapped[str]
-    image_link: Mapped[str]
+    image_link: Mapped[str | None]
     link: Mapped[str]
     cleaned_link: Mapped[str | None]
     price: Mapped[float]
