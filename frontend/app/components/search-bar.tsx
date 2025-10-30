@@ -17,8 +17,8 @@ export function SearchBar({ initialQuery = "" }: SearchBarProps) {
     const timer = setTimeout(() => {
       startTransition(() => {
         if (searchQuery.trim()) {
-          // Navigate with query parameter - triggers server re-render
-          router.push(`/?query=${encodeURIComponent(searchQuery)}`);
+          // Navigate with query parameter - always reset to page 1 on new search
+          router.push(`/?query=${encodeURIComponent(searchQuery)}&page=1`);
         } else {
           router.push("/");
         }

@@ -1,5 +1,6 @@
 import { SearchBar } from "./components/search-bar";
 import { ProductGrid } from "./components/product-grid";
+import { Pagination } from "./components/pagination";
 
 export interface Product {
   link: string;
@@ -28,50 +29,81 @@ export enum Source {
   Adstrong = "adstrong",
 }
 
+interface ProductsResponse {
+  products: Product[];
+  limit: number;
+  offset: number;
+  count: number; // Total count of all products matching the search
+}
+
 // Server-side function - runs on Next.js server, not in browser
-async function fetchProducts(searchQuery: string = ""): Promise<Product[]> {
+async function fetchProducts(
+  searchQuery: string = "",
+  page: number = 1,
+  pageSize: number = 100
+): Promise<ProductsResponse> {
   const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
   try {
+    const offset = (page - 1) * pageSize;
     const url = `${BACKEND_URL}/api/v1/?query=${encodeURIComponent(
       searchQuery
-    )}&page_size=50`;
+    )}&limit=${pageSize}&offset=${offset}`;
 
     console.log(`[Server] Fetching from: ${url}`); // Server log only
 
     const response = await fetch(url, {
       // Don't cache search results, cache empty query
-      cache: searchQuery ? "no-store" : "default",
+      cache: "no-store",
       next: { revalidate: searchQuery ? 0 : 3600 }, // Cache 1 hour for homepage
     });
 
     if (!response.ok) {
       console.error(`[Server] Backend error: ${response.status}`);
-      return [];
+      return { products: [], limit: pageSize, offset, count: 0 };
     }
 
     const data = await response.json();
-    console.log(`[Server] Fetched ${data.length} products`); // Server log only
+    console.log(
+      `[Server] Fetched ${data.products.length} products out of ${data.count} total`
+    );
 
-    return data;
+    return {
+      products: data.products,
+      limit: data.limit,
+      offset: data.offset,
+      count: data.count, // Total count from backend
+    };
   } catch (error) {
     console.error("[Server] Error fetching products:", error);
-    return [];
+    return { products: [], limit: pageSize, offset: 0, count: 0 };
   }
 }
 
 // Page component - receives searchParams from URL
 interface PageProps {
-  searchParams: Promise<{ query?: string }>;
+  searchParams: Promise<{ query?: string; page?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
   // Await searchParams (Next.js 15 requirement)
   const params = await searchParams;
   const searchQuery = params.query || "";
+  const currentPage = parseInt(params.page || "1", 10);
+  const pageSize = 100;
 
   // Fetch products on server - HTML generated server-side!
-  const products = await fetchProducts(searchQuery);
+  const { products, count } = await fetchProducts(
+    searchQuery,
+    currentPage,
+    pageSize
+  );
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(count / pageSize);
+  const hasMore = currentPage < totalPages;
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(startIndex + products.length - 1, count);
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
@@ -83,16 +115,45 @@ export default async function Home({ searchParams }: PageProps) {
           <SearchBar initialQuery={searchQuery} />
 
           {/* Search Results Info */}
-          {searchQuery && (
+          {searchQuery && count > 0 && (
             <div className="mt-4 text-sm text-gray-600">
-              Found {products.length} result{products.length !== 1 ? "s" : ""}{" "}
-              for "{searchQuery}"
+              Showing {startIndex}-{endIndex} of {count.toLocaleString()}{" "}
+              results for "{searchQuery}"
+            </div>
+          )}
+
+          {/* Pagination Info */}
+          {!searchQuery && count > 0 && (
+            <div className="mt-4 text-sm text-gray-600">
+              {count.toLocaleString()} products available
+            </div>
+          )}
+
+          {/* Pagination - Top */}
+          {products.length > 0 && totalPages > 1 && (
+            <div className="mt-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                hasMore={hasMore}
+                searchQuery={searchQuery}
+              />
             </div>
           )}
         </div>
 
         {/* Server-rendered product grid */}
         <ProductGrid products={products} />
+
+        {/* Pagination - Bottom */}
+        {products.length > 0 && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasMore={hasMore}
+            searchQuery={searchQuery}
+          />
+        )}
 
         {/* Empty State */}
         {products.length === 0 && (
