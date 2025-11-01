@@ -3,6 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from config import SQLALCHEMY_URI
 from core.models import Product
+from crawler.models import TrendingQueryCssSync
 from database import Base
 from integrations.external_db.models import ExternalDbSyncMetadata
 from integrations.idealo.models import TrendingQuery

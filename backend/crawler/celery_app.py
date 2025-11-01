@@ -24,5 +24,10 @@ celery_app.conf.beat_schedule = {
         "task": "crawler.tasks.refresh_trending_queries",
         "schedule": crontab(minute="*/30"),
         "options": {"queue": "refresh"},
-    }
+    },
+    "sync-trending-queries": {
+        "task": "crawler.tasks.sync_adstrong_products",
+        "schedule": crontab(minute="*"),  # Every minute
+        "options": {"queue": "sync"},
+    },
 }

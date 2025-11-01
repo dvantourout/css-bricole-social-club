@@ -24,7 +24,7 @@ class ProductInputSchema(BaseModel):
     image: str
     url: str
     seller: str
-    brand: str
+    brand: str = None
 
     marketing_price: Optional[MarketingPriceSchema] = Field(
         alias="marketingPrice",

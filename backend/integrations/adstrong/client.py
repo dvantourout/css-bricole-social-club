@@ -13,7 +13,7 @@ from integrations.adstrong.schemas import AdstrongProductsSchema
 # bsa: datashake
 
 
-class Client:
+class AdstrongClient:
     def __init__(cls):
         cls.base_url = "https://search-api.adstrong.com"
 

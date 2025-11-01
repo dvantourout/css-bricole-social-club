@@ -2,13 +2,13 @@ import logging
 
 from database import SessionDep
 from fastapi import APIRouter
-from integrations.adstrong.client import Client
+from integrations.adstrong.client import AdstrongClient
 from integrations.adstrong.normalizer import AdstrongNormalizer
 from pydantic import ValidationError
 from shared.schemas import NormalizedProduct
 
 router = APIRouter()
-client = Client()
+client = AdstrongClient()
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 
 
 class TrendingQueryRepository(BaseRepository):
-    def upsert(self, trending_queries: list[TrendingQuerySchema]):
+    def upsert(self, trending_queries: list[TrendingQuerySchema]) -> list[str]:
         queries = {query.query: query for query in trending_queries}
 
         stmt = select(TrendingQuery).where(
@@ -37,6 +37,8 @@ class TrendingQueryRepository(BaseRepository):
             queries_to_insert,
         )
         self.db.commit()
+
+        return [q["query_text"] for q in queries_to_insert]
 
     def list(self, *, order_bys: list[OrderBy] = None) -> list[TrendingQuery]:
         stmt = select(TrendingQuery)

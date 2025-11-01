@@ -150,7 +150,8 @@ TRACKING_PARAMS = TRACKING_PARAMS_REGISTRY | TRACKING_PARAMS_CUSTOM
 def clean_affiliate(url: str) -> str | None:
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
-
+    # TODO: https://underarmourfr.sjv.io/
+    # TODO: loaded.pxf.io
     if "murl" in query_params:
         return query_params.get("murl")[0]
 
@@ -159,6 +160,8 @@ def clean_affiliate(url: str) -> str | None:
 
     # TODO: make a list of all affiation sites
     # TODO: still save it to the db but mark it to be cleaned later
+    # TODO: for awin, only p query paramter is mandatory, a and m
+    # are not (probably for announcer and merchant?)
     if parsed_url.netloc in {
         "cmodul.solutenetwork.com",
         "www.awin1.com",

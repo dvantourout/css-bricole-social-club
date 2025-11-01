@@ -19,6 +19,7 @@ def get_products(
         query=query,
         limit=limit,
         offset=offset,
+        filter_sources_in=["adstrong"],
     )
 
     return {
