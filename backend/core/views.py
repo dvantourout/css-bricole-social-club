@@ -16,7 +16,9 @@ def get_products(
     offset: int = 0,
 ):
     products, count = ProductRepository(db=db_session).list_with_count(
-        query=query, limit=limit, offset=offset
+        query=query,
+        limit=limit,
+        offset=offset,
     )
 
     return {

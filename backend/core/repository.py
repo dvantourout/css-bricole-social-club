@@ -130,12 +130,20 @@ class ProductRepository(BaseRepository):
         stmt: Select,
         query: str = None,
         filter_cleaned_link: bool = True,
+        filter_sources_in: list[str] = None,
     ) -> Select:
         if query:
             stmt = self._search(stmt=stmt, query=query)
 
         if filter_cleaned_link:
-            stmt = stmt.where(Product.cleaned_link.isnot(None))
+            stmt = stmt.where(
+                Product.cleaned_link.isnot(None),
+            )
+
+        if filter_sources_in:
+            stmt = stmt.where(
+                Product.source.in_(filter_sources_in),
+            )
 
         return stmt
 
@@ -158,18 +166,30 @@ class ProductRepository(BaseRepository):
 
     def count(self, **kwargs):
         base_stmt = self._build_base_query(**kwargs)
-        count_stmt = select(func.count()).select_from(base_stmt.subquery())
+        count_stmt = select(
+            func.count(),
+        ).select_from(
+            base_stmt.subquery(),
+        )
 
         return self.db.scalar(count_stmt)
 
     def list(self, *, limit: int = 100, offset: int = 0, **kwargs):
         base_stmt = self._build_base_query(**kwargs)
-        stmt = self._paginate(stmt=base_stmt, limit=limit, offset=offset)
+        stmt = self._paginate(
+            stmt=base_stmt,
+            limit=limit,
+            offset=offset,
+        )
 
         return self.db.scalars(stmt).all()
 
     def list_with_count(self, *, limit: int = 100, offset: int = 0, **kwargs):
-        products = self.list(limit=limit, offset=offset, **kwargs)
+        products = self.list(
+            limit=limit,
+            offset=offset,
+            **kwargs,
+        )
         count = self.count(**kwargs)
 
         return products, count
