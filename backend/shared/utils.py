@@ -142,7 +142,22 @@ TRACKING_PARAMS_REGISTRY = {
     "klar_adid",
 }
 
-TRACKING_PARAMS_CUSTOM = {"campaign", "expa", "utm_campaign"}
+TRACKING_PARAMS_CUSTOM = {
+    "campaign",
+    "expa",
+    "utm_campaign",
+    # awin1
+    "utm_placement",
+    "sv1",
+    "sv_campaign_id",
+    "awc",
+    "source",
+    "aw_affid",
+    #
+    "ref",
+    "sPartner",
+    "divacampaign",
+}
 
 TRACKING_PARAMS = TRACKING_PARAMS_REGISTRY | TRACKING_PARAMS_CUSTOM
 
@@ -158,6 +173,23 @@ def clean_affiliate(url: str) -> str | None:
     if "url" in query_params:
         return query_params.get("url")[0]
 
+    # https://tc.tradetracker.net
+    # https://loaded.pxf.io/
+    # https://underarmourfr.sjv.io/
+    if "u" in query_params:
+        return query_params.get("u")[0]
+
+    # https://track.webgains.com/
+    if "wgtarget" in query_params:
+        return query_params.get("wgtarget")[0]
+
+    # https://jf79.net/c/?li=1801039&wi=358413&pid=1070d5a5457a5ff779dec9358f66bf35&dl=link%3Fid%3Dp5Zs8TJlngw%26offerid%3D1484571.42587293640119481389228%26type%3D15%26murl%3Dhttps%253A%252F%252Ffr.coach.com%252Ffr_FR%252Fproducts%252Fsac-%25C3%25A0-dos-crosby%252FCY279-B4%25252FBK.html&ws=%24%7BsubId%7D
+    if parsed_url.netloc in {"jf79.net"}:
+        if "dl" in query_params:
+            dl_query_params = query_params.get("dl")[0]
+
+            return clean_affiliate(dl_query_params)
+
     # TODO: make a list of all affiation sites
     # TODO: still save it to the db but mark it to be cleaned later
     # TODO: for awin, only p query paramter is mandatory, a and m
@@ -165,6 +197,7 @@ def clean_affiliate(url: str) -> str | None:
     if parsed_url.netloc in {
         "cmodul.solutenetwork.com",
         "www.awin1.com",
+        "bdt9.net",
     }:
         logger.error(f"Uncleaned url: {parsed_url.netloc}")
         return None
@@ -177,10 +210,10 @@ def clean_link(url: str) -> str | None:
 
     url = clean_affiliate(url)
 
-    if url is None:
+    if url is None or url and not url.startswith("http"):
         return None
 
-    parsed_url = urlparse(url)
+    parsed_url = urlparse(url, allow_fragments=False)
     query_params = parse_qs(parsed_url.query)
 
     removed_params = {}

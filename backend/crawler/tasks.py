@@ -1,5 +1,7 @@
 import logging
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+import requests
 from core.repository import ProductRepository
 from crawler.celery_app import celery_app
 from crawler.repository import CssSyncRepository
@@ -10,6 +12,7 @@ from integrations.idealo.client import Client as IdealoClient
 from integrations.idealo.repository import TrendingQueryRepository
 from pydantic import ValidationError
 from shared.schemas import NormalizedProduct
+from shared.utils import clean_link
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +93,55 @@ def sync_adstrong_products():
             )
 
             return {"status": "no_products", "query": trending_query.query_text}
+
+
+@celery_app.task(name="crawler.tasks.crawl_affiliate_links")
+def crawl_affiliate_links():
+    with get_db() as db:
+        products_repository = ProductRepository(db)
+        products = products_repository.list(
+            filter_without_cleaned_link=True,
+            limit=10,
+        )
+
+        for product in products:
+            logger.info(f"resolve affiliate link: {product.link}")
+
+            parsed_url = urlparse(product.link)
+            query_params = parse_qs(parsed_url.query)
+
+            product_link = product.link
+
+            if parsed_url.netloc in {"www.awin1.com"}:
+                product_link = str(
+                    urlunparse(
+                        parsed_url._replace(
+                            query=urlencode(
+                                {"p": query_params.get("p")},
+                                doseq=True,
+                            )
+                        )
+                    )
+                )
+            elif parsed_url.netloc in {"bdt9.net"}:
+                product_link = str(
+                    urlunparse(
+                        parsed_url._replace(
+                            query=urlencode(
+                                {
+                                    "si": query_params.get("si"),
+                                    "li": query_params.get("li"),
+                                    "dl": query_params.get("dl"),
+                                },
+                                doseq=True,
+                            )
+                        )
+                    )
+                )
+            response = requests.get(product_link, allow_redirects=True)
+            cleaned_link = clean_link(response.url)
+
+            product.cleaned_link = cleaned_link
+            db.commit()
+
+            logger.info(f"cleaned link: {cleaned_link}")

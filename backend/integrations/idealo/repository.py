@@ -32,11 +32,12 @@ class TrendingQueryRepository(BaseRepository):
                 }
             )
 
-        self.db.execute(
-            insert(TrendingQuery),
-            queries_to_insert,
-        )
-        self.db.commit()
+        if queries_to_insert:
+            self.db.execute(
+                insert(TrendingQuery),
+                queries_to_insert,
+            )
+            self.db.commit()
 
         return [q["query_text"] for q in queries_to_insert]
 

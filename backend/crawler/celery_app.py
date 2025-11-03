@@ -16,6 +16,7 @@ celery_app.conf.update(
     task_routes={
         "crawler.tasks.refresh_*": {"queue": "refresh"},
         "crawler.tasks.sync_*": {"queue": "sync"},
+        "crawler.tasks.crawl_*": {"queue": "crawl"},
     },
 )
 
@@ -29,5 +30,10 @@ celery_app.conf.beat_schedule = {
         "task": "crawler.tasks.sync_adstrong_products",
         "schedule": crontab(minute="*"),  # Every minute
         "options": {"queue": "sync"},
+    },
+    "crawl-affiliate-links": {
+        "task": "crawler.tasks.crawl_affiliate_links",
+        "schedule": crontab(minute="*"),  # Every minute
+        "options": {"queue": "crawl"},
     },
 }

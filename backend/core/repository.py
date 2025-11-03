@@ -129,8 +129,9 @@ class ProductRepository(BaseRepository):
         *,
         stmt: Select,
         query: str = None,
-        filter_cleaned_link: bool = True,
+        filter_cleaned_link: bool = None,
         filter_sources_in: list[str] = None,
+        filter_without_cleaned_link: bool = None,
     ) -> Select:
         if query:
             stmt = self._search(stmt=stmt, query=query)
@@ -143,6 +144,11 @@ class ProductRepository(BaseRepository):
         if filter_sources_in:
             stmt = stmt.where(
                 Product.source.in_(filter_sources_in),
+            )
+
+        if filter_without_cleaned_link:
+            stmt = stmt.where(
+                Product.cleaned_link.is_(None),
             )
 
         return stmt
@@ -174,13 +180,15 @@ class ProductRepository(BaseRepository):
 
         return self.db.scalar(count_stmt)
 
-    def list(self, *, limit: int = 100, offset: int = 0, **kwargs):
+    def list(self, *, limit: int = 100, offset: int = 0, **kwargs) -> list[Product]:
         base_stmt = self._build_base_query(**kwargs)
         stmt = self._paginate(
             stmt=base_stmt,
             limit=limit,
             offset=offset,
         )
+
+        stmt = stmt.order_by(Product.updated_at.desc())
 
         return self.db.scalars(stmt).all()
 

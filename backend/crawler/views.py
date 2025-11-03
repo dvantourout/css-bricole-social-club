@@ -1,7 +1,7 @@
 import logging
 
+from crawler.tasks import crawl_affiliate_links, sync_adstrong_products
 from crawler.tasks import refresh_trending_queries as task_refresh_trending_queries
-from crawler.tasks import sync_adstrong_products
 from fastapi import APIRouter
 
 router = APIRouter()
@@ -16,3 +16,8 @@ def refresh_trending_queries():
 @router.get("/trigger-sync")
 def trigger_sync():
     sync_adstrong_products.delay()
+
+
+@router.get("/clean-uncleaned-links")
+def clean_uncleaned_links():
+    crawl_affiliate_links()
