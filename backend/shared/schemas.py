@@ -17,7 +17,7 @@ class NormalizedProduct(BaseModel):
     price: float
     currency: str
     merchant_name: str
-    brand: str
+    brand: str | None = None
 
     # useful for displaying sales
     sale_price: float | None = None

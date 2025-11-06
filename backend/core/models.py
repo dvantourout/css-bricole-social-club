@@ -46,7 +46,7 @@ class Product(TimestampMixin, Base):
     sale_price: Mapped[float | None]
     currency: Mapped[str]
     merchant_name: Mapped[str]
-    brand: Mapped[str]
+    brand: Mapped[str | None]
     gtin: Mapped[str | None]
     mpn: Mapped[str | None]
 
