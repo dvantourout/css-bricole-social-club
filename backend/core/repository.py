@@ -3,15 +3,16 @@ from uuid import uuid4
 from core.models import Product
 from shared.repository import BaseRepository
 from shared.schemas import NormalizedProduct
-from sqlalchemy import Select, and_, case, func, insert, literal, or_, select, text
+from sqlalchemy import Select, and_, case, func, literal, or_, select, text
+from sqlalchemy.dialects.postgresql import insert as psql_upsert
 
 
 class ProductRepository(BaseRepository):
     def _product_exist(
         self, *, product: NormalizedProduct, existing_products: list[Product]
-    ):
+    ) -> Product | None:
         if not product.external_id and not product.gtin and not product.mpn:
-            return False
+            return None
 
         for existing_product in existing_products:
             if (
@@ -22,14 +23,11 @@ class ProductRepository(BaseRepository):
                 or product.mpn
                 and product.mpn == existing_product.mpn
             ):
-                return True
+                return existing_product
 
-        return False
+        return None
 
     def upsert(self, *, source: str, products: list[NormalizedProduct]):
-        products_to_insert: list = []
-        products_to_update = []
-
         stmt = select(Product)
         filters = []
 
@@ -67,40 +65,45 @@ class ProductRepository(BaseRepository):
 
         existing_products = self.db.scalars(stmt).all()
 
+        products_dict = {}
+
         for product in products:
-            if self._product_exist(
+            existing_product = self._product_exist(
                 product=product,
                 existing_products=existing_products,
-            ):
-                # TODO: update
-                products_to_update.append(product)
-            else:
-                products_to_insert.append(
-                    {
-                        "id": uuid4(),
-                        "source": source,
-                        "title": product.title,
-                        "image_link": product.image_link,
-                        "link": product.link,
-                        "cleaned_link": product.cleaned_link,
-                        "price": product.price,
-                        "sale_price": product.sale_price
-                        if product.sale_price
-                        else None,
-                        "currency": product.currency,
-                        "merchant_name": product.merchant_name,
-                        "brand": product.brand,
-                        "gtin": product.gtin,
-                        "mpn": product.mpn,
-                        "external_id": product.external_id,
-                    }
-                )
-
-        if products_to_insert:
-            self.db.execute(
-                insert(Product),
-                products_to_insert,
             )
+
+            product_id = existing_product.id if existing_product else uuid4()
+
+            # TODO: handle variant for same gtin or mpn
+            products_dict[product_id] = {
+                "id": product_id,
+                "source": source,
+                "title": product.title,
+                "image_link": product.image_link,
+                "link": product.link,
+                "cleaned_link": product.cleaned_link,
+                "price": product.price,
+                "sale_price": product.sale_price if product.sale_price else None,
+                "currency": product.currency,
+                "merchant_name": product.merchant_name,
+                "brand": product.brand,
+                "gtin": product.gtin,
+                "mpn": product.mpn,
+                "external_id": product.external_id,
+            }
+
+        if products_dict:
+            stmt = psql_upsert(Product).values(list(products_dict.values()))
+            stmt = stmt.on_conflict_do_update(
+                index_elements=[Product.id],
+                set_=dict(
+                    # TODO: define fields to update
+                    price=stmt.excluded.price,
+                    sale_price=stmt.excluded.sale_price,
+                ),
+            )
+            self.db.execute(stmt)
 
     def _search(self, *, stmt: Select, query: str) -> Select:
         query_stripped = query.strip()
@@ -241,7 +244,7 @@ class ProductRepository(BaseRepository):
             offset=offset,
         )
 
-        stmt = stmt.order_by(Product.updated_at.desc())
+        stmt = stmt.order_by(Product.title)
 
         return self.db.scalars(stmt).all()
 

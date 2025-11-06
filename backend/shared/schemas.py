@@ -7,6 +7,7 @@ class NormalizedPrice(BaseModel):
 
 
 class NormalizedProduct(BaseModel):
+    # TODO: not always reliable
     external_id: str
 
     # required field
