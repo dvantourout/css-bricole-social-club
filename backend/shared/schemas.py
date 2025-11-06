@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 
 
-class NormalizedPrice(BaseModel):
-    value: float
-    currency: str
-
-
 class NormalizedProduct(BaseModel):
     # TODO: not always reliable
     external_id: str

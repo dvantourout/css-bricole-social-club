@@ -1,5 +1,5 @@
 from integrations.ikom.schemas import ProductInputSchema
-from shared.schemas import NormalizedPrice, NormalizedProduct
+from shared.schemas import NormalizedProduct
 from shared.utils import clean_link
 
 
