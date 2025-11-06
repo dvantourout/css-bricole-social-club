@@ -2,7 +2,7 @@ from uuid import UUID
 
 from database import Base
 from shared.models import TimestampMixin
-from sqlalchemy import Index, UniqueConstraint, func
+from sqlalchemy import Index, func
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,10 +10,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 class Product(TimestampMixin, Base):
     __tablename__ = "product"
     __table_args__ = (
-        UniqueConstraint(
-            "source",
-            "external_id",
-        ),
         # GIN index for full-text search
         Index(
             "idx_product_search_vector",
