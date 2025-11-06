@@ -1,12 +1,12 @@
 import logging
 
 from fastapi import APIRouter
-from integrations.ikom.client import Client
+from integrations.ikom.client import IkomClient
 from integrations.ikom.normalizer import IkomNormalizer
 from pydantic import ValidationError
 
 router = APIRouter()
-client = Client()
+client = IkomClient()
 
 logger = logging.getLogger(__name__)
 

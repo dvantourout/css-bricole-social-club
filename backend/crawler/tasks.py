@@ -10,6 +10,8 @@ from integrations.adstrong.client import AdstrongClient
 from integrations.adstrong.normalizer import AdstrongNormalizer
 from integrations.idealo.client import Client as IdealoClient
 from integrations.idealo.repository import TrendingQueryRepository
+from integrations.ikom.client import IkomClient
+from integrations.ikom.normalizer import IkomNormalizer
 from pydantic import ValidationError
 from shared.schemas import NormalizedProduct
 from shared.utils import clean_link
@@ -38,58 +40,70 @@ def refresh_trending_queries():
 
 @celery_app.task(name="crawler.tasks.sync_adstrong_products")
 def sync_adstrong_products():
-    logger.info("Starting Adstrong product sync...")
+    client = AdstrongClient()
+    normalizer = AdstrongNormalizer
+
+    return _sync_products("adstrong", client, normalizer)
+
+
+@celery_app.task(name="crawler.tasks.sync_ikom_products")
+def sync_ikom_products():
+    client = IkomClient()
+    normalizer = IkomNormalizer
+
+    return _sync_products("ikom", client, normalizer)
+
+
+def _sync_products(source, client, normalizer):
+    logger.info(f"Starting {source} product sync...")
 
     with get_db() as db:
         css_sync_repository = CssSyncRepository(db)
         product_repository = ProductRepository(db)
 
-        trending_query = css_sync_repository.get_random_query_for_css("adstrong")
+        trending_query = css_sync_repository.get_random_query_for_css(source)
 
         if not trending_query:
-            logger.info("No trending queries available for Adstrong sync")
+            logger.info(f"No trending queries available for {source} sync")
             return {"status": "no_queries", "synced": 0}
 
         logger.info(
-            f"Syncing Adstrong products for query: '{trending_query.query_text}'"
+            f"Syncing {source} products for query: '{trending_query.query_text}'"
         )
 
-        adstrong_client = AdstrongClient()
-        adstrong_response = adstrong_client.list_products(
-            query=trending_query.query_text
-        )
+        client_products = client.list_products(query=trending_query.query_text)
 
         normalized_products: list[NormalizedProduct] = []
 
-        for product in adstrong_response.products:
+        for product in client_products:
             try:
-                normalized_products.append(AdstrongNormalizer.normalize(product))
+                normalized_products.append(normalizer.normalize(product))
             except ValidationError as e:
-                logger.error(f"Error normalizing Adstrong product: {e.errors()}")
+                logger.error(f"Error normalizing product: {e.errors()}")
 
         if normalized_products:
             product_repository.upsert(
-                source="adstrong",
+                source=source,
                 products=normalized_products,
             )
 
             css_sync_repository.mark_css_sync(
                 trending_query.query_text,
-                "adstrong",
+                source,
             )
 
             return {
                 "status": "success",
                 "query": trending_query.query_text,
                 "total_fetched": len(normalized_products),
-                "total_available": adstrong_response.total,
+                # "total_available": adstrong_response.total,
             }
         else:
-            logger.info("No valid products found from Adstrong")
+            logger.info(f"No valid products found from {source}")
 
             css_sync_repository.mark_css_sync(
                 trending_query.query_text,
-                "adstrong",
+                source,
             )
 
             return {"status": "no_products", "query": trending_query.query_text}

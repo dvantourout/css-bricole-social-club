@@ -26,8 +26,13 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(minute="*/30"),
         "options": {"queue": "refresh"},
     },
-    "sync-trending-queries": {
+    "sync-trending-queries-adstrong": {
         "task": "crawler.tasks.sync_adstrong_products",
+        "schedule": crontab(minute="*"),  # Every minute
+        "options": {"queue": "sync"},
+    },
+    "sync-trending-queries-ikom": {
+        "task": "crawler.tasks.sync_ikom_products",
         "schedule": crontab(minute="*"),  # Every minute
         "options": {"queue": "sync"},
     },

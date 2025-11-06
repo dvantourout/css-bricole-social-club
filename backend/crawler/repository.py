@@ -9,7 +9,8 @@ from sqlalchemy import insert, or_, select
 
 class CssSyncRepository(BaseRepository):
     def get_active_css_sources(self) -> list[str]:
-        return ["adstrong"]
+        # TODO: config in db
+        return ["adstrong", "ikom"]
 
     def initialize_css_sync_for_queries(self, query_texts: list[str]):
         active_sources = self.get_active_css_sources()

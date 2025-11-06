@@ -9,7 +9,7 @@ from pydantic import ValidationError
 logger = logging.getLogger(__name__)
 
 
-class Client:
+class IkomClient:
     def __init__(self):
         self.base_url = "https://www.ikom-shopping.com/fr-fr/ajax/results"
 

@@ -1,5 +1,5 @@
 import requests
-from integrations.adstrong.schemas import AdstrongProductsSchema
+from integrations.adstrong.schemas import AdstrongProductsSchema, ProductInputSchema
 
 # q: chaussures securite timberland
 # page: 1
@@ -20,7 +20,7 @@ class AdstrongClient:
     def get_api_url(cls) -> str:
         return f"{cls.base_url}/api/v1/search"
 
-    def list_products(cls, *, query: str) -> AdstrongProductsSchema:
+    def list_products(cls, *, query: str) -> list[ProductInputSchema]:
         url = cls.get_api_url()
 
         params = {
@@ -28,6 +28,7 @@ class AdstrongClient:
             "m": 101,  # TODO: TBD
             "_crawler_bot": 0,
             "bsa": "datashake",
+            "conditions": "NEW",
         }
         headers = {"X-Country": "fr"}
 
@@ -42,4 +43,4 @@ class AdstrongClient:
 
         validated_data = AdstrongProductsSchema.model_validate(json_data, strict=False)
 
-        return validated_data
+        return validated_data.products
