@@ -3,45 +3,98 @@ from uuid import uuid4
 from core.models import Product
 from shared.repository import BaseRepository
 from shared.schemas import NormalizedProduct
-from sqlalchemy import Select, case, func, insert, literal, or_, select, text
+from sqlalchemy import Select, and_, case, func, insert, literal, or_, select, text
 
 
 class ProductRepository(BaseRepository):
+    def _product_exist(
+        self, *, product: NormalizedProduct, existing_products: list[Product]
+    ):
+        if not product.external_id and not product.gtin and not product.mpn:
+            return False
+
+        for existing_product in existing_products:
+            if (
+                product.external_id
+                and product.external_id == existing_product.external_id
+                or product.gtin
+                and product.gtin == existing_product.gtin
+                or product.mpn
+                and product.mpn == existing_product.mpn
+            ):
+                return True
+
+        return False
+
     def upsert(self, *, source: str, products: list[NormalizedProduct]):
         products_to_insert: list = []
+        products_to_update = []
 
-        products_external_id = [product.external_id for product in products]
-
-        stmt = select(Product.external_id).where(
-            Product.source == source,
-            Product.external_id.in_(
-                products_external_id,
-            ),
-        )
-        existing_producs_ids = self.db.scalars(stmt).all()
+        stmt = select(Product)
+        filters = []
 
         for product in products:
-            if product.external_id in existing_producs_ids:
-                continue
+            or_filters = []
 
-            products_to_insert.append(
-                {
-                    "id": uuid4(),
-                    "source": source,
-                    "title": product.title,
-                    "image_link": product.image_link,
-                    "link": product.link,
-                    "cleaned_link": product.cleaned_link,
-                    "price": product.price,
-                    "sale_price": product.sale_price if product.sale_price else None,
-                    "currency": product.currency,
-                    "merchant_name": product.merchant_name,
-                    "brand": product.brand,
-                    "gtin": product.gtin,
-                    "mpn": product.mpn,
-                    "external_id": product.external_id,
-                }
-            )
+            # TODO: when selecting by gtin or mpn check if external_id are equals or not
+            # TODO: delete duplicates
+            if product.external_id:
+                or_filters.append(Product.external_id == product.external_id)
+
+            if product.gtin:
+                or_filters.append(
+                    and_(
+                        Product.merchant_name.ilike(product.merchant_name),
+                        Product.gtin == product.gtin,
+                    )
+                )
+
+            if product.mpn:
+                or_filters.append(
+                    and_(
+                        Product.merchant_name.ilike(product.merchant_name),
+                        Product.mpn == product.mpn,
+                    )
+                )
+
+            if or_filters:
+                filters.append(
+                    or_(*or_filters),
+                )
+
+        if filters:
+            stmt = stmt.filter(or_(*filters))
+
+        existing_products = self.db.scalars(stmt).all()
+
+        for product in products:
+            if self._product_exist(
+                product=product,
+                existing_products=existing_products,
+            ):
+                # TODO: update
+                products_to_update.append(product)
+            else:
+                products_to_insert.append(
+                    {
+                        "id": uuid4(),
+                        "source": source,
+                        "title": product.title,
+                        "image_link": product.image_link,
+                        "link": product.link,
+                        "cleaned_link": product.cleaned_link,
+                        "price": product.price,
+                        "sale_price": product.sale_price
+                        if product.sale_price
+                        else None,
+                        "currency": product.currency,
+                        "merchant_name": product.merchant_name,
+                        "brand": product.brand,
+                        "gtin": product.gtin,
+                        "mpn": product.mpn,
+                        "external_id": product.external_id,
+                    }
+                )
 
         if products_to_insert:
             self.db.execute(
